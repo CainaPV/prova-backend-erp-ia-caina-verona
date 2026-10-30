@@ -5,6 +5,7 @@
 
 
 ### Respostas das Questões Teóricas
+
 ### Parte 1: Arquitetura e Organização
 #### QUESTÃO 1
 Você foi contratado para desenhar a arquitetura de um novo módulo de um ERP (ex: módulo de Pedidos e Estoque), que precisa se comunicar com outros módulos já existentes (Financeiro, Clientes) via microsserviços.
@@ -55,14 +56,88 @@ Esses serviços impactam diretamente a operação de venda; por isso, falhas ou 
 2. Estoque: tentativas de reserva com falha, tentativas de estoque negativo e alertas de estoque baixo;
 3. Financeiro: falhas de pagamento, tempo de resposta e indisponibilidade do serviço.
 
-QUESTÃO 2
+### QUESTÃO 2
 Descreva a estrutura de pastas/camadas que você usaria em um serviço FastAPI de médio/grande porte (ex: separação entre routers, services, repositories, schemas, models, core, tests). 
 Explique o motivo de cada camada existir e como isso ajuda em testabilidade e manutenção. 
 Cite quais princípios (SOLID,Clean Architecture, DDD leve, etc.) inspiraram sua escolha, se algum.
-Resp.:
+### Resp.:
+Em um serviço FASTAPI de método/grande porte, eu organizaria e estruturaria dessa forma:
+
+servico-fastapi/
+├── services/
+│   ├── pedidos/
+│   │   ├── main.py
+│   │   ├── routers.py
+│   │   ├── schemas.py
+│   │   ├── models.py
+│   │   ├── database.py
+│   │   └── service.py
+│   │
+│   ├── estoque/
+│   │   ├── main.py
+│   │   ├── routers.py
+│   │   ├── schemas.py
+│   │   ├── models.py
+│   │   ├── database.py
+│   │   └── service.py
+│   │
+│   ├── clientes/
+│   │   ├── main.py
+│   │   ├── routers.py
+│   │   ├── schemas.py
+│   │   ├── models.py
+│   │   ├── database.py
+│   │   └── service.py
+│   │
+│   └── financeiro/
+│       ├── main.py
+│       ├── routers.py
+│       ├── schemas.py
+│       ├── models.py
+│       ├── database.py
+│       └── service.py
+│
+├── cache/
+│   ├── config.py
+│   └── redis.py
+│
+├── worker/
+│   ├── worker.py
+│   └── tasks.py
+│
+├── tests/
+│   ├── test_pedidos.py
+│   ├── test_estoque.py
+│   ├── test_clientes.py
+│   └── test_financeiro.py
+│
+├── .env.example
+├── Dockerfile
+└── docker-compose.yml
+
+A ideia na pasta service/ é separar todos os serviços que foram solicitados pelo cliente e dentro de cada serviço terá várias camadas com resposabilidades específicas.
+routers.py: evita misturar url e regra de negócio e banco
+schemas.py: impede dados inválidos antes de chegar na regra de negócio
+models.py: Mantém a estrutura dos dados organizada
+database.py: Centraliza a conexão; se a URL mudar, altera em um lugar
+service.py: Facilita testar regras sem depender diretamente de rota ou banco
+
+Na pasta cache/ teria dentro o arquivo redis.py onde serviria para evitar consultas no banco de dados principal toda vez que alguém busque algum produto muito acessado por exemplo.
+Ddados temporários e comunicação assíncrona
+No arquivo config.py teria como padrão as configurações necessárias para conexão de cliente...
+
+Na pasta worker/ teria dentro o arquico worker.py que executaria tarefas em segundo plano da fila e evitaria travar a API.
+
+Na pasta tests/ garanteria que as alterações não quebrem funcionalidades existentes de cada serviço
+
+Na pasta raiz/ do projeto teria:
+.env - Evita expor senhas e facilita configurar o projeto
+Dockerfile - Padroniza o ambiente de execução
+docker-compose.yml - Simplifica a execução do projeto inteiro
 
 
-Parte 2: Assíncrono e Concorrência
-QUESTÃO 3
+
+### Parte 2: Assíncrono e Concorrência
+### QUESTÃO 3
 Explique com suas palavras a diferença entre asyncio, threading e multiprocessing em Python, e quando usar cada um. Dê um exemplo real de cenário de ERP para cada abordagem (ex: chamar 3 APIs externas, processar um arquivo CSV grande, gerar um relatório pesado em PDF)
 Resp.:
