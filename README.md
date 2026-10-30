@@ -160,3 +160,53 @@ Usuário solicita um relatório anual
 → calcular vendas, impostos, produtos e gráficos
 → gerar PDF
 
+### Parte 4: Docker, Orquestração e Entrega
+### Questão 7.
+
+Documente no README como subir tudo com um único comando (docker compose up) e como rodar as migrações/seed inicial, se houver;
+
+
+### Parte 5: Desafio de IA (LLM / Agentes / MCP)
+Como não integramos com APIs de LLM de terceiros em produção, o objetivo aqui é avaliar
+seu entendimento de arquitetura e padrões de IA aplicada, não o uso de uma API
+específica.
+### Questão 9 (teórica/design — obrigatória mesmo que não implemente tudo). Descreva
+como você desenharia isso de forma plugável para um LLM real no futuro, cobrindo:
+
+● Como seria o tool/function calling (schema das ferramentas expostas ao agente: ex.
+consultar_estoque, criar_pedido);
+### Resp.:
+Eu transformaria funções específicas do ERP em ferramentas MCP utilizando FastMCP. Por exemplo, poderia existir uma ferramenta chamada consultar_estoque, que receberia o produto_id como número inteiro e retornaria a quantidade disponível.
+Cada ferramenta teria nome, descrição, parâmetros, tipo dos dados e campos obrigatórios. O FastMCP pode utilizar os tipos definidos na função para gerar esse schema automaticamente.
+Exemplo: consultar_estoque(produto_id: int) ou criar_pedido(cliente_id: int, produtos: list).
+Dessa forma, o agente entende quais ferramentas estão disponíveis, quais dados precisa enviar e qual serviço deve ser consultado.
+
+● Se você usaria o padrão MCP (Model Context Protocol) para expor as ferramentas
+do ERP a um agente e explique como um servidor MCP se encaixaria na arquitetura
+de microsserviços que você desenhou na Parte 1;
+### Resp.:
+Eu utilizaria MCP para criar uma camada entre o agente e os microsserviços do ERP. 
+Poderia existir um servidor MCP principal, com ferramentas separadas por domínio, como tools/clientes.py, tools/produtos.py, tools/estoque.py e tools/pedidos.py.
+Cada ferramenta MCP chamaria a API ou service do microsserviço correto. Por exemplo, a ferramenta consultar_estoque chamaria o microsserviço de estoque.
+
+● Guardrails: como evitar que o agente execute ações destrutivas (ex: deletar pedidos)
+sem confirmação, e como lidar com alucinação/erro de interpretação;
+### Resp.:
+Eu não deixaria funções destrutivas, como deletar_pedido, disponíveis para o agente de forma automática.
+Caso fosse necessário cancelar, atualizar ou excluir algum pedido, a ferramenta exigiria uma confirmação explícita do usuário antes da execução. 
+Também utilizaria permissões por usuários e logs de todas as ações realizadas.
+Eu poderia criar um arquivo system_prompt.md com regras para orientar o agente sobre quando usar cada ferramenta. Porém, as regras principais também precisariam ser validadas no próprio servidor MCP, pois o agente pode interpretar algo de forma errada.
+
+● Considerações de custo, latência e observabilidade específicas de sistemas com
+LLM (ex: logging de prompts/respostas, cache de respostas, fallback quando o
+provedor de IA está fora do ar).
+### Resp.:
+Eu utilizaria Redis para criar caches temporários de consultas que acontecem com frequência, como consulta de produto ou estoque. Dessa forma, evita consultas desnecessárias ao banco de dados e reduz o tempo de resposta.
+Dependendo da regra de negócio, também poderia utilizar uma arquitetura RAG para o agente consultar fontes internas, como documentos, manuais, políticas ou informações do ERP. Os dados poderiam ser armazenados em um banco vetorial, como o ChromaDB.
+Dessa forma, em vez de enviar todos os dados internos para o LLM a cada pergunta, o sistema buscaria apenas as informações mais relevantes antes de gerar a resposta. Isso ajuda a reduzir tokens, custo e também diminui a chance de o agente responder algo incorreto.
+Caso seja necessário responder perguntas muito parecidas com frequência, também poderia existir um cache de respostas, desde que os dados não sejam sensíveis ou mudem constantemente.
+Para reduzir custos, eu evitaria enviar todo o histórico da conversa para o LLM e limitaria a quantidade de informações enviadas em cada requisição.
+Eu registraria logs das chamadas do agente, ferramentas utilizadas, erros, tempo de resposta e quantidade de tokens utilizados. Em produção, esses logs poderiam ser enviados para uma ferramenta de monitoramento, além de aparecerem no terminal.
+
+
+
