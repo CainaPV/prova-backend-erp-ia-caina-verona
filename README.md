@@ -73,77 +73,63 @@ Cite quais princípios (SOLID,Clean Architecture, DDD leve, etc.) inspiraram sua
 Em um serviço FASTAPI de método/grande porte, eu organizaria e estruturaria dessa forma:
 
 servico-fastapi/
-├── services/
-│   ├── pedidos/
-│   │   ├── main.py
-│   │   ├── routers.py
-│   │   ├── schemas.py
-│   │   ├── models.py
+├── app/
+│   ├── main.py
+│   ├── routers/
+│   │   ├── pedidos.py
+│   │   ├── estoque.py
+│   │   └── clientes.py
+│   ├── services/
+│   │   ├── pedidos_service.py
+│   │   ├── estoque_service.py
+│   │   └── clientes_service.py
+│   ├── repositories/
+│   │   ├── pedidos_repository.py
+│   │   ├── estoque_repository.py
+│   │   └── clientes_repository.py
+│   ├── schemas/
+│   │   ├── pedido.py
+│   │   ├── estoque.py
+│   │   └── cliente.py
+│   ├── models/
+│   │   ├── pedido.py
+│   │   ├── estoque.py
+│   │   └── cliente.py
+│   ├── core/
+│   │   ├── config.py
 │   │   ├── database.py
-│   │   └── service.py
-│   │
-│   ├── estoque/
-│   │   ├── main.py
-│   │   ├── routers.py
-│   │   ├── schemas.py
-│   │   ├── models.py
-│   │   ├── database.py
-│   │   └── service.py
-│   │
-│   ├── clientes/
-│   │   ├── main.py
-│   │   ├── routers.py
-│   │   ├── schemas.py
-│   │   ├── models.py
-│   │   ├── database.py
-│   │   └── service.py
-│   │
-│   └── financeiro/
-│       ├── main.py
-│       ├── routers.py
-│       ├── schemas.py
-│       ├── models.py
-│       ├── database.py
-│       └── service.py
-│
-├── cache/
-│   ├── config.py
-│   └── redis.py
-│
-├── worker/
-│   ├── worker.py
-│   └── tasks.py
-│
+│   │   ├── security.py
+│   │   ├── dependencies.py
+│   │   └── exceptions.py
+│   ├── cache/
+│   │   └── redis.py
+│   └── workers/
+│       ├── worker.py
+│       └── tasks.py
 ├── tests/
-│   ├── test_pedidos.py
-│   ├── test_estoque.py
-│   ├── test_clientes.py
-│   └── test_financeiro.py
-│
+│   ├── unit/
+│   └── integration/
 ├── .env.example
 ├── Dockerfile
 └── docker-compose.yml
 
-A ideia na pasta service/ é separar todos os serviços que foram solicitados pelo cliente e dentro de cada serviço terá várias camadas com resposabilidades específicas.
-routers.py: evita misturar url e regra de negócio e banco
-schemas.py: impede dados inválidos antes de chegar na regra de negócio
-models.py: Mantém a estrutura dos dados organizada
-database.py: Centraliza a conexão; se a URL mudar, altera em um lugar
-service.py: Facilita testar regras sem depender diretamente de rota ou banco
 
-Na pasta cache/ teria dentro o arquivo redis.py onde serviria para evitar consultas no banco de dados principal toda vez que alguém busque algum produto muito acessado por exemplo.
-Ddados temporários e comunicação assíncrona
-No arquivo config.py teria como padrão as configurações necessárias para conexão de cliente...
+- routers/: serve para organizar as rotas/endpoints da API. Evita misturar URL, requisição e regra de negócio no mesmo arquivo.
+- schemas/: serve para validar os dados que chegam e saem da API. Por exemplo, verificar se um valor está no formato correto.
+- models/: mantém a estrutura das tabelas do banco de dados organizada, como Pedido, Cliente e Produto.
+- repositories/: fica responsável por fazer as consultas, cadastros, alterações e exclusões no banco de dados. Assim, o restante do sistema não precisa acessar o banco diretamente.
+- services/: onde ficam as regras de negócio. Por exemplo: antes de criar um pedido, verificar o estoque, validar o cliente e calcular o valor total.
+- core/: teria as configurações principais e que podem ser usadas por todo o projeto. Por exemplo: conexão com banco de dados, configurações do .env e autenticação.
+- cache/: teria o redis.py, que serviria para evitar consultas desnecessárias no banco. Por exemplo, guardar temporariamente um produto muito acessado. Também poderia ser usado para fila ou comunicação assíncrona.
+- workers/: teria arquivos para executar tarefas em segundo plano, como enviar e-mail, gerar relatório ou processar fila, sem travar a API.
+- tests/: garante que novas alterações não quebrem funcionalidades que já existiam. Poderia separar testes das regras de negócio e testes das rotas da API.
+- .env.example: mostra quais variáveis de ambiente o projeto precisa, sem expor senhas, tokens ou URLs reais.
+- Dockerfile: padroniza o ambiente para a aplicação funcionar da mesma forma em qualquer computador ou servidor.
+- docker-compose.yml: facilita iniciar a API junto com outros serviços, como PostgreSQL, Redis e worker.
 
-Na pasta worker/ teria dentro o arquico worker.py que executaria tarefas em segundo plano da fila e evitaria travar a API.
+Essa separação facilita a manutenção e os testes, pois cada pasta possui uma responsabilidade específica.
 
-Na pasta tests/ garanteria que as alterações não quebrem funcionalidades existentes de cada serviço
-
-Na pasta raiz/ do projeto teria:
-.env - Evita expor senhas e facilita configurar o projeto
-Dockerfile - Padroniza o ambiente de execução
-docker-compose.yml - Simplifica a execução do projeto inteiro
-
+Sobre os princípios, conforme a estrutura apresentada acima eu seguiria a organização com base no SOLID(cada camada tem sua responsabilidade) e Clean Architecture(separar a regra de negócio das partes externas, como FastAPI, banco de dados, Redis e APIs externas) .
 
 
 ### Parte 2: Assíncrono e Concorrência
