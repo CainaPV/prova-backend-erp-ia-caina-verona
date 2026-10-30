@@ -9,7 +9,9 @@
 ### Parte 1: Arquitetura e Organização
 #### QUESTÃO 1
 Você foi contratado para desenhar a arquitetura de um novo módulo de um ERP (ex: módulo de Pedidos e Estoque), que precisa se comunicar com outros módulos já existentes (Financeiro, Clientes) via microsserviços.
+
 ● Como você organizaria os serviços (quais responsabilidades cada microsserviçoteri a e por quê);
+
 ### Resp.: 
 Eu organizaria o módulo de ERP por domínios de negócio, separando as responsabilidades principais em microsserviços independentes. Dessa forma, cada serviço possui regras claras, pode evoluir sem impactar diretamente os demais e mantém seus próprios dados.
 
@@ -28,6 +30,7 @@ O serviço financeiro ficaria isolado porque possui regras mais sensíveis, como
 
 
 ● Como seria a comunicação entre eles (síncrona via REST, assíncrona via fila, ambos?) e em que casos usaria cada uma;
+
 ### Resp.:
 Eu utilizaria ambas(síncrona e assícrona). Via REST seria utilizado quando o serviço de Pedidos precisaria de uma resposta imediata para continuar o fluxo, como validar se o cliente está ativo ou consultar a disponibilidade de estoque. Pois ao meu ver, alguns serviços precisariam ter respostas imediatas antes de prosseguir para o outro fluxo por exemplo.
 Na comunicação assíncrona, utilizaria filas para tarefas que não precisam bloquear a criação ou confirmação de um pedido. Por exemplo, após um pedido ser criado, o sistema pode enviar uma tarefa para um worker gerar uma notificação ao cliente, atualizar relatórios de vendas ou verificar se o estoque ficou abaixo do limite mínimo. Dessa forma, caso o serviço de notificações esteja indisponível, o pedido ainda poderá ser criado normalmente.
@@ -36,16 +39,19 @@ Para chamadas REST independentes que precisam de resposta imediata, utilizaria a
 
 
 ● Onde entrariam PostgreSQL e Redis nessa arquitetura (cache, filas, pub/sub, locks distribuídos etc.);
-Resp.:
+
+### Resp.:
 O PostgreSQL seria utilizado como banco de dados principal e persistente, armazenando entidades do domínio como clientes, produtos, pedidos, pagamentos e movimentações de estoque. Cada microsserviço seria responsável pelos próprios dados, evitando que um serviço altere diretamente as tabelas de outro.
 O Redis seria utilizado como tecnologia complementar. Para cache, armazenaria temporariamente dados muito consultados, como informações de produtos e disponibilidade de estoque, reduzindo leituras repetidas no PostgreSQL. Também poderia ser usado como broker de filas para tarefas assíncronas, como envio de notificações, geração de relatórios e alertas de estoque baixo.
 
 ● O papel de um API Gateway (ex: Kong) nesse cenário;
-Resp.:
+
+### Resp.:
 O API Gateway seria utilizado como ponto único de entrada para clientes externos, frontend e integrações. Ele encaminharia as requisições ao microsserviço responsável, evitando que o consumidor precise conhecer os endereços internos de Clientes, Pedidos, Estoque e Financeiro. 
 
 ● Como você pensaria em observabilidade (logs, métricas, tracing) e cite ferramentas (ex: Prometheus/Grafana) e o que monitoraria como prioridade em um ERP;
-Resp.:
+
+### Resp.:
 Para garantir a observabilidade do sistema, utilizaria logs estruturados para registrar eventos e erros importantes, como criação de pedidos, falhas na reserva de estoque e indisponibilidade do serviço Financeiro. 
 Também utilizaria métricas para acompanhar números como tempo de resposta, quantidade de requisições e taxa de erros. 
 Para identificar em qual serviço ocorreu uma lentidão ou falha, utilizaria tracing distribuído.
@@ -60,6 +66,7 @@ Esses serviços impactam diretamente a operação de venda; por isso, falhas ou 
 Descreva a estrutura de pastas/camadas que você usaria em um serviço FastAPI de médio/grande porte (ex: separação entre routers, services, repositories, schemas, models, core, tests). 
 Explique o motivo de cada camada existir e como isso ajuda em testabilidade e manutenção. 
 Cite quais princípios (SOLID,Clean Architecture, DDD leve, etc.) inspiraram sua escolha, se algum.
+
 ### Resp.:
 Em um serviço FASTAPI de método/grande porte, eu organizaria e estruturaria dessa forma:
 
