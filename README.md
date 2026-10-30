@@ -15,17 +15,18 @@ Você foi contratado para desenhar a arquitetura de um novo módulo de um ERP (e
 ### Resp.: 
 Eu organizaria o módulo de ERP por domínios de negócio, separando as responsabilidades principais em microsserviços independentes. Dessa forma, cada serviço possui regras claras, pode evoluir sem impactar diretamente os demais e mantém seus próprios dados.
 
-- Serviço de Clientes: responsável pelo cadastro e informações de cada cliente(POST /clientes), seja nome, CPF/CNPJ, endereço e situação cadastral, por exemplo.
+-Serviço de Clientes: responsável pelo cadastro e informações de cada cliente(POST /clientes), seja nome, CPF/CNPJ, endereço e situação cadastral, por exemplo.
   Consulta de clientes(GET /clientes/{client_id}).
   Esse serviço é separado porque essas informações podem ser utilizadas por diferentes módulos, como Pedidos e Financeiro.
 
-- Serviço de Produtos e Estoque: responsável pelo cadastro de produtos(POST /produtos), consulta de disponibilidade(GET /produtos/{produto_id}/estoque), reserva(GET /produtos/{produto_id}/reserva) e baixa de estoque(POST /produtos/{produto_id}/baixas). 
+-Serviço de Produtos e Estoque: responsável pelo cadastro de produtos(POST /produtos), consulta de disponibilidade(GET /produtos/{produto_id}/estoque), reserva(GET /produtos/{produto_id}/reserva) e baixa de estoque(POST /produtos/{produto_id}/baixas). 
   Ele concentra as regras relacionadas à quantidade disponível e movimentações, evitando que outros serviços alterem estoque diretamente.
 
-- Serviço de Pedidos: responsável por criar(POST) e acompanhar pedidos(GET). Ele recebe os itens desejados pelo cliente(POST /pedidos), consulta os serviços necessários(GET  /clientes/3;POST /credito/validar;POST /estoque/reservas) e controla o status do pedido, como pendente, confirmado, pago ou cancelado(POST /pedidos/{pedido_id}/checkout). Esse serviço não deve calcular crédito nem controlar estoque internamente; ele apenas coordena o fluxo.
+-Serviço de Pedidos: responsável por criar(POST) e acompanhar pedidos(GET). Ele recebe os itens desejados pelo cliente(POST /pedidos), consulta os serviços necessários(GET  /clientes/3;POST /credito/validar;POST /estoque/reservas) e controla o status do pedido, como pendente, confirmado, pago ou cancelado(POST /pedidos/{pedido_id}/checkout). Esse serviço não deve calcular crédito nem controlar estoque internamente; ele apenas coordena o fluxo.
 
-- Serviço Financeiro: responsável por validar limite de crédito(POST /financeiro/limite), gerar cobranças, registrar pagamentos e controlar informações financeiras. 
+-Serviço Financeiro: responsável por validar limite de crédito(POST /financeiro/limite), gerar cobranças, registrar pagamentos e controlar informações financeiras. 
 O serviço financeiro ficaria isolado porque possui regras mais sensíveis, como valores, faturas e pagamentos.
+
 
 
 
