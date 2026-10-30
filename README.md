@@ -209,4 +209,44 @@ Para reduzir custos, eu evitaria enviar todo o histórico da conversa para o LLM
 Eu registraria logs das chamadas do agente, ferramentas utilizadas, erros, tempo de resposta e quantidade de tokens utilizados. Em produção, esses logs poderiam ser enviados para uma ferramenta de monitoramento, além de aparecerem no terminal.
 
 
+### Parte 6: Pergunta de Perfil
+### Questão 10. 
+Imagine a seguinte situação real: nosso stack principal é Python, mas identificamos que uma frente específica do produto (ex: um serviço de alta performance
+para ingestão/processamento de grandes volumes de eventos do ERP, com baixa latência e alto throughput) se beneficiaria de ser escrita em Go.
+Você seria alocado(a) para desenvolver essa frente em Go.
+● Como você reagiria a essa decisão?
+### Resp.:
+Atualmente eu ainda não utilizei Go em projetos, porém encararia a decisão de forma positiva. No começo eu precisaria de um período de adaptação, pois já programo há mais tempo em Python.
+Mesmo assim, por já possuir base em lógica, funções, classes, APIs, arquitetura e banco de dados, acredito que conseguiria aprender a linguagem e contribuir com o projeto. Eu entenderia que a escolha de Go seria para uma necessidade específica de performance, e não para substituir Python em todo o sistema.
+
+● Você acha Go uma escolha razoável para esse cenário específico (alta concorrência, baixo overhead, binário único para deploy)? Por quê ou por que não?
+### Resp.:
+Sim, considero Go uma escolha razoável para esse cenário. Go é uma linguagem que possui baixo consumo de recursos e facilita trabalhar com várias tarefas ao mesmo tempo.
+Para um serviço que recebe e processa muitos eventos, com baixa latência e alto volume de requisições, Go pode trazer ganhos de desempenho.
+Python também poderia ser utilizado, principalmente com asyncio, filas e múltiplos workers. Porém, se a necessidade de concorrência e performance for realmente alta, Go pode ser uma escolha mais adequada para esse serviço específico.
+
+● Se você discordasse da escolha, como argumentaria tecnicamente a favor de outra linguagem/abordagem?
+### Resp.:
+Caso eu discordasse, eu não discordaria apenas por não conhecer a linguagem. Eu analisaria o volume real de eventos, a latência esperada, os custos e os gargalos atuais do sistema.
+Se Python com asyncio, filas, Redis ou Kafka e mais de um worker já atendesse aos requisitos, eu argumentaria que talvez não fosse necessário adicionar outra linguagem ao projeto, pois isso também aumenta a complexidade de manutenção.
+Para tomar essa decisão com mais segurança, eu criaria uma pequena pauta de conceito com ajuda da IA e faria testes de carga no início do projeto. 
+Assim, seria possível comparar o desempenho das abordagens e escolher a melhor linguagem que atende aos requisitos dentro do prazo definido.
+
+● Se concordasse, mas não tivesse experiência prévia com Go, como se organizaria para aprender e entregar com qualidade?
+### Resp.:
+Primeiramente, eu estudaria os fundamentos de Go, como, interfaces, tratamento de erros, goroutines, channels e context. 
+Também assistiria a videoaulas para reforçar o aprendizado.
+Pesquisaria a documentação oficial, exemplos parecidos com o projeto e tiraria dúvidas com pessoas mais experientes e com IA. 
+
+### Parte 7: Portfólio
+### Questão 11. 
+Envie link(s) do seu GitHub/GitLab com projetos anteriores ou pessoais relevantes (se houver). 
+Escolha um projeto que considere mais representativo do seu nível técnico e explique brevemente:
+● Qual problema ele resolve;
+● Principais decisões técnicas e por quê;
+● O que você faria diferente hoje, com o que aprendeu desde então.
+
+
+
+
 
