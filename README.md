@@ -149,4 +149,27 @@ docker-compose.yml - Simplifica a execução do projeto inteiro
 ### Parte 2: Assíncrono e Concorrência
 ### QUESTÃO 3
 Explique com suas palavras a diferença entre asyncio, threading e multiprocessing em Python, e quando usar cada um. Dê um exemplo real de cenário de ERP para cada abordagem (ex: chamar 3 APIs externas, processar um arquivo CSV grande, gerar um relatório pesado em PDF)
-Resp.:
+
+### Resp.:
+As três servem para executar tarefas de forma simultânea, porém cada uma possui uma finalidade diferente:
+Asyncio: permite que uma função espere uma operação de rede sem travar o restante da aplicação.
+Ou seja, enquanto uma API está aguardando resposta do serviço Financeiro, por exemplo, ela pode continuar processando outras tarefas.Exemplo: asyncio.gather
+Serviço de Pedidos
+→ consulta Cliente
+→ consulta Estoque
+→ consulta Financeiro
+
+Threading: ele é útil principalmente quando você precisa usar uma biblioteca bloqueante, ou seja, uma biblioteca que não possui suporte para async e await. Integração com impressoras e SDK legados.Exemplo:
+Pedido confirmado
+→ sistema precisa usar uma biblioteca antiga para imprimir etiqueta
+→ essa biblioteca demora e bloqueia a execução
+→ tarefa é enviada para uma thread
+
+
+Multiprocessing:cada processo possui memória própria e pode usar mais de um núcleo do processador. Por isso, é adequado para tarefas que exigem bastante CPU. Ou seja, serve para processar CSV grandes, gerar relatórios PDF pesados e processamento de imagem e gráficos.
+Exemplo:
+Usuário solicita um relatório anual
+→ sistema precisa ler um CSV com milhões de linhas
+→ calcular vendas, impostos, produtos e gráficos
+→ gerar PDF
+
