@@ -1,0 +1,22 @@
+.env
+.env.example
+
+# Ambiente virtual
+venv/
+.venv/
+
+# Cache e arquivos temporários do Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Configurações locais de editores e sistema operacional
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+C:\Users\caina\ERP\Prova - Back-end vA.pdf

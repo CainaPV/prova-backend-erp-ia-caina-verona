@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+sqlalchemy[asyncio]
+asyncpg
+PyJWT
+redis
+rq
+python-dotenv
