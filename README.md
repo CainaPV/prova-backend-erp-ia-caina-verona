@@ -27,17 +27,12 @@ Eu organizaria o módulo de ERP por domínios de negócio, separando as responsa
 -Serviço Financeiro: responsável por validar limite de crédito(POST /financeiro/limite), gerar cobranças, registrar pagamentos e controlar informações financeiras. 
 O serviço financeiro ficaria isolado porque possui regras mais sensíveis, como valores, faturas e pagamentos.
 
-
-
-
 ● Como seria a comunicação entre eles (síncrona via REST, assíncrona via fila, ambos?) e em que casos usaria cada uma;
 
 ### Resp.:
 Eu utilizaria ambas(síncrona e assícrona). Via REST seria utilizado quando o serviço de Pedidos precisaria de uma resposta imediata para continuar o fluxo, como validar se o cliente está ativo ou consultar a disponibilidade de estoque. Pois ao meu ver, alguns serviços precisariam ter respostas imediatas antes de prosseguir para o outro fluxo por exemplo.
 Na comunicação assíncrona, utilizaria filas para tarefas que não precisam bloquear a criação ou confirmação de um pedido. Por exemplo, após um pedido ser criado, o sistema pode enviar uma tarefa para um worker gerar uma notificação ao cliente, atualizar relatórios de vendas ou verificar se o estoque ficou abaixo do limite mínimo. Dessa forma, caso o serviço de notificações esteja indisponível, o pedido ainda poderá ser criado normalmente.
 Para chamadas REST independentes que precisam de resposta imediata, utilizaria async/`await` e asyncio.gather no FastAPI. Isso permitiria consultar múltiplos serviços ao mesmo tempo.
-
-
 
 ● Onde entrariam PostgreSQL e Redis nessa arquitetura (cache, filas, pub/sub, locks distribuídos etc.);
 
@@ -49,7 +44,6 @@ O Redis seria utilizado como tecnologia complementar. Para cache, armazenaria te
 
 ### Resp.:
 API Gateway seria utilizado como ponto único de entrada para clientes externos, frontend e integrações. Ele encaminharia as requisições ao microsserviço responsável, evitando que o consumidor precise conhecer os endereços internos de Clientes, Pedidos, Estoque e Financeiro. 
-
 
 ● Como você pensaria em observabilidade (logs, métricas, tracing) e cite ferramentas (ex: Prometheus/Grafana) e o que monitoraria como prioridade em um ERP;
 
@@ -170,11 +164,12 @@ Documente no README como subir tudo com um único comando (docker compose up) e 
 Como não integramos com APIs de LLM de terceiros em produção, o objetivo aqui é avaliar
 seu entendimento de arquitetura e padrões de IA aplicada, não o uso de uma API
 específica.
-### Questão 9 (teórica/design — obrigatória mesmo que não implemente tudo). Descreva
-como você desenharia isso de forma plugável para um LLM real no futuro, cobrindo:
+### Questão 9 (teórica/design — obrigatória mesmo que não implemente tudo). 
+Descreva como você desenharia isso de forma plugável para um LLM real no futuro, cobrindo:
 
 ● Como seria o tool/function calling (schema das ferramentas expostas ao agente: ex.
 consultar_estoque, criar_pedido);
+
 ### Resp.:
 Eu transformaria funções específicas do ERP em ferramentas MCP utilizando FastMCP. Por exemplo, poderia existir uma ferramenta chamada consultar_estoque, que receberia o produto_id como número inteiro e retornaria a quantidade disponível.
 Cada ferramenta teria nome, descrição, parâmetros, tipo dos dados e campos obrigatórios. O FastMCP pode utilizar os tipos definidos na função para gerar esse schema automaticamente.
@@ -184,6 +179,7 @@ Dessa forma, o agente entende quais ferramentas estão disponíveis, quais dados
 ● Se você usaria o padrão MCP (Model Context Protocol) para expor as ferramentas
 do ERP a um agente e explique como um servidor MCP se encaixaria na arquitetura
 de microsserviços que você desenhou na Parte 1;
+
 ### Resp.:
 Eu utilizaria MCP para criar uma camada entre o agente e os microsserviços do ERP. 
 Poderia existir um servidor MCP principal, com ferramentas separadas por domínio, como tools/clientes.py, tools/produtos.py, tools/estoque.py e tools/pedidos.py.
@@ -191,6 +187,7 @@ Cada ferramenta MCP chamaria a API ou service do microsserviço correto. Por exe
 
 ● Guardrails: como evitar que o agente execute ações destrutivas (ex: deletar pedidos)
 sem confirmação, e como lidar com alucinação/erro de interpretação;
+
 ### Resp.:
 Eu não deixaria funções destrutivas, como deletar_pedido, disponíveis para o agente de forma automática.
 Caso fosse necessário cancelar, atualizar ou excluir algum pedido, a ferramenta exigiria uma confirmação explícita do usuário antes da execução. 
@@ -200,6 +197,7 @@ Eu poderia criar um arquivo system_prompt.md com regras para orientar o agente s
 ● Considerações de custo, latência e observabilidade específicas de sistemas com
 LLM (ex: logging de prompts/respostas, cache de respostas, fallback quando o
 provedor de IA está fora do ar).
+
 ### Resp.:
 Eu utilizaria Redis para criar caches temporários de consultas que acontecem com frequência, como consulta de produto ou estoque. Dessa forma, evita consultas desnecessárias ao banco de dados e reduz o tempo de resposta.
 Dependendo da regra de negócio, também poderia utilizar uma arquitetura RAG para o agente consultar fontes internas, como documentos, manuais, políticas ou informações do ERP. Os dados poderiam ser armazenados em um banco vetorial, como o ChromaDB.
@@ -215,17 +213,20 @@ Imagine a seguinte situação real: nosso stack principal é Python, mas identif
 para ingestão/processamento de grandes volumes de eventos do ERP, com baixa latência e alto throughput) se beneficiaria de ser escrita em Go.
 Você seria alocado(a) para desenvolver essa frente em Go.
 ● Como você reagiria a essa decisão?
+
 ### Resp.:
 Atualmente eu ainda não utilizei Go em projetos, porém encararia a decisão de forma positiva. No começo eu precisaria de um período de adaptação, pois já programo há mais tempo em Python.
 Mesmo assim, por já possuir base em lógica, funções, classes, APIs, arquitetura e banco de dados, acredito que conseguiria aprender a linguagem e contribuir com o projeto. Eu entenderia que a escolha de Go seria para uma necessidade específica de performance, e não para substituir Python em todo o sistema.
 
 ● Você acha Go uma escolha razoável para esse cenário específico (alta concorrência, baixo overhead, binário único para deploy)? Por quê ou por que não?
+
 ### Resp.:
 Sim, considero Go uma escolha razoável para esse cenário. Go é uma linguagem que possui baixo consumo de recursos e facilita trabalhar com várias tarefas ao mesmo tempo.
 Para um serviço que recebe e processa muitos eventos, com baixa latência e alto volume de requisições, Go pode trazer ganhos de desempenho.
 Python também poderia ser utilizado, principalmente com asyncio, filas e múltiplos workers. Porém, se a necessidade de concorrência e performance for realmente alta, Go pode ser uma escolha mais adequada para esse serviço específico.
 
 ● Se você discordasse da escolha, como argumentaria tecnicamente a favor de outra linguagem/abordagem?
+
 ### Resp.:
 Caso eu discordasse, eu não discordaria apenas por não conhecer a linguagem. Eu analisaria o volume real de eventos, a latência esperada, os custos e os gargalos atuais do sistema.
 Se Python com asyncio, filas, Redis ou Kafka e mais de um worker já atendesse aos requisitos, eu argumentaria que talvez não fosse necessário adicionar outra linguagem ao projeto, pois isso também aumenta a complexidade de manutenção.
@@ -233,6 +234,7 @@ Para tomar essa decisão com mais segurança, eu criaria uma pequena pauta de co
 Assim, seria possível comparar o desempenho das abordagens e escolher a melhor linguagem que atende aos requisitos dentro do prazo definido.
 
 ● Se concordasse, mas não tivesse experiência prévia com Go, como se organizaria para aprender e entregar com qualidade?
+
 ### Resp.:
 Primeiramente, eu estudaria os fundamentos de Go, como, interfaces, tratamento de erros, goroutines, channels e context. 
 Também assistiria a videoaulas para reforçar o aprendizado.
@@ -242,6 +244,8 @@ Pesquisaria a documentação oficial, exemplos parecidos com o projeto e tiraria
 ### Questão 11. 
 Envie link(s) do seu GitHub/GitLab com projetos anteriores ou pessoais relevantes (se houver). 
 Escolha um projeto que considere mais representativo do seu nível técnico e explique brevemente:
+Links:
+
 ● Qual problema ele resolve;
 ● Principais decisões técnicas e por quê;
 ● O que você faria diferente hoje, com o que aprendeu desde então.
